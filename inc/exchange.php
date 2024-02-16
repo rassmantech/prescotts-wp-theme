@@ -400,9 +400,8 @@ function build_exchange_pagination($total, $page_size) {
   $output .= '<div class="exchange-pagination">';
   $output .= '  <ul>';
 
-  // Prev Button
   if ($page > 1) {
-    $output .= '    <li class="prev"><a href="' . $url . '?expage=' . $page - 1 . '"><<</a></li>';
+    $output .= '    <li class="prev"><a href="' . $url . '?expage=' . ($page - 1) . '">&laquo;</a></li>';
   }
 
   if ($page > 4) {
@@ -414,28 +413,28 @@ function build_exchange_pagination($total, $page_size) {
   }
 
   if ($page - 3 > 0) {
-    $output .= '    <li><a href="' . $url . '?expage=' . $page - 3 . '">' . $page - 3 . '</a></li>';
+    $output .= '    <li><a href="' . $url . '?expage=' . ($page - 3) . '">' . ($page - 3) . '</a></li>';
   }
   if ($page - 2 > 0) {
-    $output .= '    <li><a href="' . $url . '?expage=' . $page - 2 . '">' . $page - 2 . '</a></li>';
+    $output .= '    <li><a href="' . $url . '?expage=' . ($page - 2 ). '">' . ($page - 2 ). '</a></li>';
   }
   if ($page - 1 > 0) {
-    $output .= '    <li><a href="' . $url . '?expage=' . $page - 1 . '">' . $page - 1 . '</a></li>';
+    $output .= '    <li><a href="' . $url . '?expage=' . ($page - 1) . '">' . ($page - 1) . '</a></li>';
   }
 
   $output .= '    <li><span>' . $page . '</span></li>';
 
-  if ($page + 1 < $total_pages + 1) {
-    $output .= '    <li><a href="' . $url . '?expage=' . $page + 1 . '">' . $page + 1 . '</a></li>';
+  if ($page + 1 < ($total_pages + 1)) {
+    $output .= '    <li><a href="' . $url . '?expage=' . ($page + 1) . '">' . ($page + 1) . '</a></li>';
   }
-  if ($page + 2 < $total_pages + 1) {
-    $output .= '    <li><a href="' . $url . '?expage=' . $page + 2 . '">' . $page + 2 . '</a></li>';
+  if ($page + 2 < ($total_pages + 1)) {
+    $output .= '    <li><a href="' . $url . '?expage=' . ($page + 2) . '">' . ($page + 2) . '</a></li>';
   }
-  if ($page + 3 < $total_pages + 1) {
-    $output .= '    <li><a href="' . $url . '?expage=' . $page + 3 . '">' . $page + 3 . '</a></li>';
+  if ($page + 3 < ($total_pages + 1)) {
+    $output .= '    <li><a href="' . $url . '?expage=' . ($page + 3) . '">' . ($page + 3) . '</a></li>';
   }
 
-  if ($page < $total_pages - 4) {
+  if ($page < ($total_pages - 4)) {
     $output .= '    <li class="dots">...</li>';
   }
 
@@ -444,7 +443,7 @@ function build_exchange_pagination($total, $page_size) {
   }
 
   if ($page < $total_pages) {
-    $output .= '    <li class="next"><a href="' . $url . '?expage=' . $page + 1 . '"">>></a></li>';
+    $output .= '    <li class="next"><a href="' . $url . '?expage=' . ($page + 1) . '">&raquo;</a></li>';
   }
 
   $output .= '  </ul>';
