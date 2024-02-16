@@ -149,7 +149,7 @@ function prescotts_load_scripts(){
     wp_enqueue_style( 'smoothproducts', get_template_directory_uri() . '/css/jquery.smoothproducts.css');
     wp_enqueue_style( 'slick-slider', get_template_directory_uri() . '/css/jquery.slick.css');
     wp_enqueue_style( 'slick-theme', get_template_directory_uri() . '/css/jquery.slick-theme.css');
-	
+
     wp_enqueue_style( 'theme-fonts', 'https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap');
     wp_enqueue_style( 'surgicalmicroscopes', get_stylesheet_uri(), array(), null );
 }
@@ -634,6 +634,7 @@ add_action('after_setup_theme', 'remove_admin_bar');
 function add_query_vars_filter($vars){
     $vars[] = 'serial';
     $vars[] = 'product';
+    $vars[] = 'expage';
     return $vars;
 }
 add_filter('query_vars', 'add_query_vars_filter');

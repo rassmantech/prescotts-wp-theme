@@ -385,90 +385,126 @@ function get_order_status($id) {
 }
 
 
+// Builds pagination ============================================================
+function build_exchange_pagination($total, $page_size) {
+  $total_pages = ceil($total / $page_size);
+
+  $url = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+  $page = 1;
+  $page_query_var = get_query_var('expage');
+  if ($page_query_var) {
+    $page = $page_query_var;
+  }
+
+  $output = '';
+  $output .= '<div class="exchange-pagination">';
+  $output .= '  <ul>';
+
+  // Prev Button
+  if ($page > 1) {
+    $output .= '    <li class="prev"><a href="' . $url . '?expage=' . $page - 1 . '"><<</a></li>';
+  }
+
+  if ($page > 4) {
+    $output .= '    <li><a href="' . $url . '?expage=1">1</a></li>';
+  }
+
+  if ($page > 5) {
+    $output .= '    <li class="dots">...</li>';
+  }
+
+  if ($page - 3 > 0) {
+    $output .= '    <li><a href="' . $url . '?expage=' . $page - 3 . '">' . $page - 3 . '</a></li>';
+  }
+  if ($page - 2 > 0) {
+    $output .= '    <li><a href="' . $url . '?expage=' . $page - 2 . '">' . $page - 2 . '</a></li>';
+  }
+  if ($page - 1 > 0) {
+    $output .= '    <li><a href="' . $url . '?expage=' . $page - 1 . '">' . $page - 1 . '</a></li>';
+  }
+
+  $output .= '    <li><span>' . $page . '</span></li>';
+
+  if ($page + 1 < $total_pages + 1) {
+    $output .= '    <li><a href="' . $url . '?expage=' . $page + 1 . '">' . $page + 1 . '</a></li>';
+  }
+  if ($page + 2 < $total_pages + 1) {
+    $output .= '    <li><a href="' . $url . '?expage=' . $page + 2 . '">' . $page + 2 . '</a></li>';
+  }
+  if ($page + 3 < $total_pages + 1) {
+    $output .= '    <li><a href="' . $url . '?expage=' . $page + 3 . '">' . $page + 3 . '</a></li>';
+  }
+
+  if ($page < $total_pages - 4) {
+    $output .= '    <li class="dots">...</li>';
+  }
+
+  if ($page < $total_pages - 3) {
+    $output .= '    <li><a href="' . $url . '?expage=' . $total_pages . '">' . $total_pages . '</a></li>';
+  }
+
+  if ($page < $total_pages) {
+    $output .= '    <li class="next"><a href="' . $url . '?expage=' . $page + 1 . '"">>></a></li>';
+  }
+
+  $output .= '  </ul>';
+  $output .= '</div>';
+
+  return $output;
+}
+
+
 // Returns active orders ============================================================
-function active_row_query($region) {
+function get_exchanges($region, $status) {
     global $wpdb;
     $dbname = $wpdb->dbname;
-    if ($region):
-        $result = $wpdb->get_results('SELECT * FROM '.$dbname.'.wp_exchanges WHERE status<>"Complete" AND rep_region="'.$region.'"');
-    else:
-        $result = $wpdb->get_results('SELECT * FROM '.$dbname.'.wp_exchanges WHERE NOT status="Complete"');
-    endif;
-    $added = [];
-    $body = '';
 
-    for ($i=0; $i < count($result); $i++) {
-        if (!in_array($result[$i]->business_works, $added) && $result[$i]->archived=='false') {
-        $row = '<tr data-id="'.$result[$i]->business_works.'" class="row" data-region="'.$result[$i]->rep_region.'">
-            <td class="number">
-                <a href="/exchange/exchange-order-viewer/?id='.$result[$i]->business_works.'" target="_blank">'.$result[$i]->business_works.'</a></td>
-            <td class="date">
-                '.$result[$i]->order_date.'
-            </td>
-            <td class="name">
-                '.$result[$i]->rep_name.'
-            </td>
-            <td class="facility">
-                        '.$result[$i]->facility_name.'
-                    </td>
-            <td class="status">
-                '.get_order_status($result[$i]->business_works).'
-            </td>
-            </tr>';
-            $body .= $row;
-            array_push($added,$result[$i]->business_works);
-        }
-     }
-     return $body;
+    $page_size = 50;
+    $current_page = get_query_var('expage');
+
+    $sql = 'SELECT * FROM wp_exchanges';
+    $total_sql = 'SELECT COUNT(DISTINCT business_works) FROM wp_exchanges';
+
+    if ($status == 'active') {
+      $sql .= ' WHERE status<>"Complete"';
+      $total_sql .= ' WHERE status<>"Complete"';
+    } else {
+      $sql .= ' WHERE status="Complete"';
+      $total_sql .= ' WHERE status="Complete"';
+    }
+
+    if ($region && $region != '') {
+      $sql .= ' AND rep_region="' . $region . '"';
+      $total_sql .= ' AND rep_region="' . $region . '"';
+    }
+
+    $sql .= ' GROUP BY business_works ORDER BY order_date_stamp DESC LIMIT ' . $page_size;
+
+    if ($current_page) {
+      $offset = $page_size * ($current_page - 1);
+      $sql .= ' OFFSET ' . $offset;
+    }
+
+    $rows = $wpdb->get_results($sql);
+    $total_rows = $wpdb->get_var($total_sql);
+
+    return [
+      'rows' => $rows,
+      'total' => $total_rows,
+      'page_size' => $page_size,
+    ];
 }
 
 function get_active_requests($region) {
     global $wpdb;
     $dbname = $wpdb->dbname;
     if ($region):
-        $result = $wpdb->get_results('SELECT * FROM '.$dbname.'.wp_exchanges WHERE status<>"Complete" AND rep_region="'.$region.'"');
+        $result = $wpdb->get_results('SELECT * FROM ' . $dbname . '.wp_exchanges WHERE status<>"Complete" AND rep_region="'.$region.'"');
     else:
-        $result = $wpdb->get_results('SELECT * FROM '.$dbname.'.wp_exchanges WHERE NOT status="Complete"');
+        $result = $wpdb->get_results('SELECT * FROM ' . $dbname . '.wp_exchanges WHERE status<>"Complete"');
     endif;
 
     return $result;
-}
-
-
-// Returns inactive orders ============================================================
-function inactive_row_query($region) {
-    global $wpdb;
-    $dbname = $wpdb->dbname;
-    if ($region != ''):
-        $result = $wpdb->get_results('SELECT * FROM '.$dbname.'.wp_exchanges WHERE archived="true" AND rep_region="'.$region.'"');
-    else:
-        $result = $wpdb->get_results('SELECT * FROM '.$dbname.'.wp_exchanges WHERE archived="true"');
-    endif;
-    $added = [];
-    $body = '';
-    for ($i=0; $i < count($result); $i++) {
-        if (!in_array($result[$i]->business_works, $added)) {
-            $row = '<tr data-id="'.$result[$i]->business_works.'" class="row" data-region="'.$result[$i]->rep_region.'">
-                <td class="number">
-                    <a href="/exchange/exchange-order-viewer/?id='.$result[$i]->business_works.'" target="_blank">'.$result[$i]->business_works.'</a></td>
-                <td class="date">
-                    '.$result[$i]->order_date.'
-                </td>
-                <td class="name">
-                    '.$result[$i]->rep_name.'
-                </td>
-                <td class="facility">
-                    '.$result[$i]->facility_name.'
-                </td>
-                <td class="status">
-                    <table class="order-status"><tr><td class="status-active">&nbsp;</td></tr></table>
-                </td>
-                </tr>';
-                $body .= $row;
-                array_push($added,$result[$i]->business_works);
-            }
-    }
-    return $body;
 }
 
 // Creates Parts Array Body for PDF ============================================================

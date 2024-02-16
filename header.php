@@ -95,7 +95,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </div>
                     <div class="header-iso">
                         <a href="#">
-                            <img src="<?php bloginfo('template_directory'); ?>/img/iso-logo.svg" />
+                            <img src="https://www.surgicalmicroscopes.com/wp-content/uploads/2023/02/iso-logo.png" />
                         </a>
                     </div>
                     <div class="header-contact">

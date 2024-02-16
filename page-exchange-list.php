@@ -6,27 +6,30 @@
         <div class="no-builder">
             <div class="container">
                 <div class="twelve columns">
-                    <?php if (is_user_logged_in()): ?>
+                    <?php if (is_user_logged_in()) { ?>
+
                         <?php
                             $user = wp_get_current_user();
-                            $region = '';
+                            $region = null;
                             $user_region = get_user_meta($user->ID, 'region');
-                            if ($user_region):
+                            if ($user_region) {
                                 $region = $user_region[0];
-                            endif;
-                            $rows = '';
-                            if (is_page('Active')):
-                                $rows = active_row_query($region);
-                            else:
-                                $rows = inactive_row_query($region);
-                            endif;
+                            }
+
+                            $status = 'archived';
+                            if (is_page('Active')) {
+                                $status = 'active';
+                            }
+
+                            $exchanges = get_exchanges($region, $status)
                         ?>
-                    <div class="row">
-                        <?php if (is_page('Active')): ?>
-                        <h1>Active Exchanges</h1>
-                        <?php else: ?>
-                        <h1>Archived Exchanges</h1>
-                        <?php endif; ?>
+
+                      <div class="row">
+                        <?php if (is_page('Active')) { ?>
+                          <h1>Active Exchanges</h1>
+                        <?php } else { ?>
+                          <h1>Archived Exchanges</h1>
+                        <?php } ?>
                         <div class="filter-wrap">
                             <?php if (!in_array('regional_manager', (array) $user->roles)): ?>
                                 <select class="region-filter">
@@ -40,20 +43,21 @@
                                     <option value="uk">UK</option>
                                 </select>
                             <?php endif; ?>
-                            <select class="exchange-filter">
-                                <option value="all">- Select Part -</option>
-                                <option value="all">All</option>
-                                <option value="INV">Inventory Part</option>
-                                <option value="BIL">Billable Part</option>
-                                <option value="WAR">Warranty Part</option>
-                                <option value="SCP">Service Contract Part</option>
-                            </select>
+                              <select class="exchange-filter">
+                                  <option value="all">- Select Part -</option>
+                                  <option value="all">All</option>
+                                  <option value="INV">Inventory Part</option>
+                                  <option value="BIL">Billable Part</option>
+                                  <option value="WAR">Warranty Part</option>
+                                  <option value="SCP">Service Contract Part</option>
+                              </select>
                             <?php if (is_page('Active')): ?>
-                            <button class="csv-export">Export All to CSV</button>
+                              <button class="csv-export">Export All to CSV</button>
                             <?php endif; ?>
                         </div>
-                    </div>
-                    <div class="row">
+                      </div>
+
+                      <div class="row">
                         <table class="exchange-table" id="list" cellpadding="0" cellspacing="0" border="0" width="100%">
                             <thead>
                                 <th>Exchange#</th>
@@ -63,29 +67,51 @@
                                 <th>Status</th>
                             </thead>
                             <tbody>
-                                <?php echo $rows; ?>
+                              <?php foreach ($exchanges['rows'] as $row) { ?>
+                                <tr data-id="<?= $row->business_works ?>" class="row" data-region="<?= $row->rep_region ?>">
+                                  <td class="number">
+                                    <a href="/exchange/exchange-order-viewer/?id=<?= $row->business_works ?>" target="_blank"><?= $row->business_works ?></a>
+                                  </td>
+                                  <td class="date">
+                                    <?= $row->order_date ?>
+                                  </td>
+                                  <td class="name">
+                                    <?= $row->rep_name ?>
+                                  </td>
+                                  <td class="facility">
+                                    <?= $row->facility_name ?>
+                                  </td>
+                                  <td class="status">
+                                    <?= get_order_status($row->business_works) ?>
+                                  </td>
+                                </tr>
+                              <?php } ?>
                             </tbody>
                         </table>
-                    </div>
-                    <?php else: ?>
-                    <div class="exchange-login">
-                        <div class="row">
-                            <h1>Log In</h1>
-                        </div>
-                        <div class="row">
-                            <h3>You must be logged in to access the Return/Exchange system.</h3>
-                            <?php
-                            $loginargs = array(
-                                'echo' => true,
-                                'redirect' => site_url($_SERVER['REQUEST_URI']),
-                                'remember' => true,
-                                'form_id' => 'exchange-login',
-                            );
-                            wp_login_form($loginargs);
-                            ?>
-                        </div>
-                    </div>
-                    <?php endif; ?>
+
+                        <?= build_exchange_pagination($exchanges['total'], $exchanges['page_size']) ?>
+
+                      </div>
+
+                    <?php } else { ?>
+                      <div class="exchange-login">
+                          <div class="row">
+                              <h1>Log In</h1>
+                          </div>
+                          <div class="row">
+                              <h3>You must be logged in to access the Return/Exchange system.</h3>
+                              <?php
+                              $loginargs = array(
+                                  'echo' => true,
+                                  'redirect' => site_url($_SERVER['REQUEST_URI']),
+                                  'remember' => true,
+                                  'form_id' => 'exchange-login',
+                              );
+                              wp_login_form($loginargs);
+                              ?>
+                          </div>
+                      </div>
+                    <?php } ?>
                 </div>
             </div>
         </div>
